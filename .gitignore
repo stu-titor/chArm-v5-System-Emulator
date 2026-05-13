@@ -1,4 +1,5 @@
 *.o
+*.s
 se
 test-se
 csim
