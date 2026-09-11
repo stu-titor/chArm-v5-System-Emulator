@@ -103,9 +103,6 @@ bool error(stat_t status) {
 comb_logic_t handle_hazards(opcode_t D_opcode, uint8_t D_src1, uint8_t D_src2,
                             uint64_t D_val_a, opcode_t X_opcode, uint8_t X_dst,
                             bool X_condval) {
-    /* Students: Change this code */
-    // This will need to be updated in week 2, good enough for week 1
-#ifdef PIPE
     /* Default: set all stages to load for this cycle.  This ensures
      * stale P_BUBBLE/P_STALL values from previous cycles don't persist. */
     pipe_control_stage(S_FETCH,   false, false);
@@ -170,12 +167,4 @@ comb_logic_t handle_hazards(opcode_t D_opcode, uint8_t D_src1, uint8_t D_src2,
         pipe_control_stage(S_MEMORY,  false, true);
         pipe_control_stage(S_WBACK,   false, true);
     }
-#else
-    bool f_stall = F_out->status == STAT_HLT || F_out->status == STAT_INS;
-    pipe_control_stage(S_FETCH, false, f_stall);
-    pipe_control_stage(S_DECODE,  false, false);
-    pipe_control_stage(S_EXECUTE, false, false);
-    pipe_control_stage(S_MEMORY,  false, false);
-    pipe_control_stage(S_WBACK,   false, false);
-#endif
 }

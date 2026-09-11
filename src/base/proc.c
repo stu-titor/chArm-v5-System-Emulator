@@ -213,13 +213,10 @@ int runElf(const uint64_t entry) {
                       W_out->W_sigs.w_enable && W_out->status == STAT_AOK);
 
         // update to the PC to be correct
-#ifdef PIPE
         if (W_in->status == STAT_ADR || W_in->status == STAT_INS) {
             // PC of the excepting instruction
             guest.proc->PC = M_PC;
-        } else
-#endif
-        {
+        } else {
             // predicted PC
             guest.proc->PC = F_PC;
         }

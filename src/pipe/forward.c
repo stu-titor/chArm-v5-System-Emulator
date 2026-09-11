@@ -18,7 +18,6 @@ comb_logic_t forward_reg(uint8_t D_src1, uint8_t D_src2, uint8_t X_dst,
                          bool W_wval_sel, bool X_w_enable, bool M_w_enable,
                          bool W_w_enable, uint64_t *val_a, uint64_t *val_b) {
 
-#ifdef PIPE
     // val a
     if(X_w_enable && X_dst == D_src1 && X_dst != 0x1F){
         *val_a = X_val_ex;
@@ -35,6 +34,5 @@ comb_logic_t forward_reg(uint8_t D_src1, uint8_t D_src2, uint8_t X_dst,
     } else if(W_w_enable && W_dst == D_src2 && W_dst != 0x1F){
         *val_b = W_wval_sel ? W_val_mem : W_val_ex;
     }
-#endif
     return;
 }

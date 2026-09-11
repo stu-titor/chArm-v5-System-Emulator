@@ -10,7 +10,7 @@ which will be located in the `bin` directory.
 You can run the emulator on any binary file in one of the `testcases` subdirectories with the `-i` (input) flag.
 By default, the emulator uses STUR with the effective address -1 as a trap to print a value to stderr,
 which can be used to verify the output of a program.
-An example would be `bin/se -i testcases/alu/print_simple/add`.
+An example would be `bin/se -i testcases/alu/hazard/add`.
 
 Additional flags can be added to display more information.
 The `-v <level>` (verbose) flag can be added to view the status of each pipeline register after each processor cycle.
@@ -35,7 +35,7 @@ with the `-c <checkpoint file>` flag.
 This will print register and relevant memory contents to the provided checkpoint file.
 
 Putting this all together, an example command would be
-`bin/se -i testcases/applications/hard/gemm_block -l 40000000 -c checkpoint.out -A 4 -B 32 -C 512 -d 100`
+`bin/se -i testcases/ec_writeup/gemm_block -l 40000000 -c checkpoint.out -A 4 -B 32 -C 512 -d 100`
 to run the emulator on the blocked matrix-matrix multiplication example
 
 # Repository structure

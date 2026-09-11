@@ -8,20 +8,12 @@ export EXTRA_FLAGS
 
 # Targets
 
-week4: tidy pipe all test clean
-week3: tidy pipe all test clean
-week2: tidy pipeminus all test clean
-week1: tidy test clean
+week4: tidy all test clean
+week3: tidy all test clean
 
 all:
 	(cd src && make se)
 	${CC} ${CC_FLAGS} -I instr -o bin/se `/bin/ls src/base/build/*.o src/pipe/build/*.o src/cache/build/cache.o`
-
-pipe:
-	$(eval EXTRA_FLAGS += -DPIPE)
-
-pipeminus:
-	$(eval EXTRA_FLAGS += -UPIPE)
 
 parallel:
 	$(eval EXTRA_FLAGS += -DPARALLEL -URANDOM)

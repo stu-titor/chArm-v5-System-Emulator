@@ -35,7 +35,7 @@ void usage(char *argv[]) {
     printf("Usage: %s [-hwv]\n", argv[0]);
     printf("Options:\n");
     printf("  -h        Print this help message.\n");
-    printf("  -w <num>  Test a specific week. Defaults to week 2.\n");
+    printf("  -w <num>  Test a specific week (3 or 4). Defaults to week 3.\n");
     printf("  -v <num>  Verbosity level. Defaults to 0, which only shows final "
            "score.\n            Set to 1 to view which tests are failing.\n    "
            "        Set to 2 to view all tests as they run.\n");
@@ -155,12 +155,8 @@ static int run_test(int wk, int A, int B, int C, int d, char *testdir,
 double run_tests_dir(int week_num, char *testdirs[], size_t num_testdirs,
                      double weights[], size_t *total_num_tests, int *total,
                      int cache_configs[][4], int num_cache_configs) {
-    int cycle_limit;
-    if (week_num == 2) {
-        cycle_limit = 500;
-    } else if (week_num == 3) {
-        cycle_limit = 1 << 13;
-    } else if (week_num == 4) {
+    int cycle_limit = 1 << 13;
+    if (week_num == 4) {
         cycle_limit = 1 << 26;
     }
     if (verbosity > 1) {
@@ -228,9 +224,11 @@ double run_tests_dir(int week_num, char *testdirs[], size_t num_testdirs,
 
 int main(int argc, char *argv[]) {
     char c;
-    int week = 2;
+    int week = 3;
     verbosity = 0;
+#ifdef EC
     int ec = 0;
+#endif
     /* Parse command line args. */
     while ((c = getopt(argc, argv, ":h:w:v:e")) != -1) {
         switch (c) {
@@ -254,23 +252,12 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (week == 1)
-        week = 2;
-
     /* Check for valid command line args. */
-    if (!ec && (week < 2 || week > 4)) {
+    if (week < 3 || week > 4) {
         fprintf(stderr,
-                "Error: Week must be between 2 and 4 or left unspecified.\n");
+                "Error: Week must be 3 or 4 or left unspecified.\n");
         exit(EXIT_FAILURE);
     }
-
-#ifdef EC
-    if (ec && week == 2) {
-        fprintf(stderr,
-                "Error: Week must be at least 3 to test extra credit.\n");
-        exit(EXIT_FAILURE);
-    }
-#endif
 
     /* Install timeout handler */
     if (signal(SIGALRM, sigalrm_handler) == SIG_ERR) {
@@ -291,42 +278,37 @@ int main(int argc, char *argv[]) {
        are a lead TA on SE so you are probably smart. We can now easily add new
        testcases, YIPPEEE!!!
     */
-    char *testdirs_w2[] = {
-        "testcases/basics/",           "testcases/alu/pipeminus/",
-        "testcases/mem/pipeminus/",    "testcases/alu/print_pipeminus/",
-        "testcases/branch/pipeminus/", "testcases/exceptions/pipeminus/"};
     char *testdirs_w3[] = {
-        "testcases/alu/hazard/",          "testcases/mem/hazard/",
-        "testcases/branch/hazard/",       "testcases/exceptions/hazard/",
-        "testcases/applications/hazard/", "testcases/applications/hard/"};
-    char *testdirs_w4[] = {"testcases/mem/pipeminus/",
+        "testcases/basics/",            "testcases/alu/hazard/",
+        "testcases/mem/hazard/",        "testcases/branch/hazard/",
+        "testcases/exceptions/hazard/", "testcases/applications/hazard/",
+        "testcases/applications/hard/"};
+    char *testdirs_w4[] = {"testcases/mem/hazard/",
                            "testcases/applications/hard/"};
-    char **testdirs[] = {testdirs_w2, testdirs_w3, testdirs_w4};
+    char **testdirs[] = {testdirs_w3, testdirs_w4};
 
-    int dir_nums[] = {6, 6, 2}; // number of dirs for weeks 2, 3, 4
+    int dir_nums[] = {7, 2}; // number of dirs for weeks 3, 4
 
     // this is a (kinda) hacky fix :(
-    double weights[][6] = {
-        {0.1, 0.25, 0.25, 0.15, 0.15, 0.1}, // weights for week 2
-        {0.2, 0.2, 0.2, 0.1, 0.2, 0.1},     // weights for week 3
-        {0.2, 0.8, 0.0, 0.0, 0.0,
+    double weights[][7] = {
+        {0.05, 0.2, 0.15, 0.2, 0.1, 0.2, 0.1}, // weights for week 3
+        {0.2, 0.8, 0.0, 0.0, 0.0, 0.0,
          0.0}}; // weights for week 4 (had to add extra zeros to make not an
                 // incomplete type)
 
-    int no_cache_config[][4] = {
-        {-1, -1, -1, -1}}; // cache config for weeks 2 and 3
+    int no_cache_config[][4] = {{-1, -1, -1, -1}}; // cache config for week 3
     int cache_configs_w4[][4] = {{1, 8, 8, 2},
                                  {4, 8, 32, 4},
                                  {1, 32, 64, 8},
                                  {2, 8, 64, 8},
                                  {4, 32, 512, 100}}; // cache configs for week 4
 
-    int num_cache_configs[] = {1, 1,
-                               5}; // number of cache configs for weeks 2, 3, 4
+    int num_cache_configs[] = {1,
+                               5}; // number of cache configs for weeks 3, 4
 
     size_t total_num_tests = 0;
     int total = 0;
-    int index = week - 2; // i didnt want to type week - 2 a ton
+    int index = week - 3; // i didnt want to type week - 3 a ton
 
     score += run_tests_dir(week, testdirs[index], dir_nums[index],
                            weights[index], &total_num_tests, &total,
@@ -339,15 +321,11 @@ int main(int argc, char *argv[]) {
     }
 
     // Needs to be stdout for gradescope
-    if (week == 2) {
-        score *= 6;
-    } else if (week == 3) {
+    if (week == 3) {
         score *= 4;
     }
 
-    if (1 < week && week < 5) {
-        printf("Total score for week %d SE: %0.2f\n", week, score);
-    }
+    printf("Total score for week %d SE: %0.2f\n", week, score);
 
 #ifdef EC
     double ec_score = 0;
@@ -366,8 +344,7 @@ int main(int argc, char *argv[]) {
             cache_config_ec[3] = -1;
         }
 
-        char *testdir = week == 2 ? "testcases/charmv5plus/pipeminus/"
-                                  : "testcases/charmv5plus/hazard/";
+        char *testdir = "testcases/charmv5plus/hazard/";
 
         char *tests_ec[] = {"csel_simple",  "csel_less_simple",
                             "csinc_simple", "csinc_less_simple",
